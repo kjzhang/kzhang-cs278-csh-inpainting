@@ -19,8 +19,14 @@ starting_scale = -ceil(log2(min(hB, wB))) + 5;
 scale = 2^starting_scale;
 
 A = imresize(A, scale);
-B = imresize(B, scale);
-mask = imresize(mask, scale);
+
+[ht wt dt] = size(A);
+A = imresize(A_org, [ht wt]);
+B = imresize(B_org, [ht wt]);
+mask = imresize(M_org, [ht, wt]);
+
+% B = imresize(B, scale);
+% mask = imresize(mask, scale);
 
 % M3 = repmat(mask, [1 1 3]) == 1;
 % [wt ht dt] = size(A);
@@ -148,6 +154,8 @@ for current_scale = starting_scale:0
     if current_scale < 0,
         A_data = imresize(A_org, 2 * scale);
         [hB wB dB] = size(A_data);
+        
+        A_data = imresize(A_org, [hB wB]);
         A = imresize(A, [hB wB]);
         B = imresize(B_org, [hB wB]);
         

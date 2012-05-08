@@ -5,10 +5,11 @@ B_org = B;
 M_org = mask;
 
 sig = 0.25;
-error_power = 8;
+error_power = 4;
 
-max_iterations = 25;
-threshold = 5;
+max_iterations = 50;
+min_iterations = 50;
+threshold = 0.01;
 
 delta = CSH_w - 1;
 
@@ -18,10 +19,14 @@ starting_scale = -ceil(log2(min(hB, wB))) + 5;
 scale = 2^starting_scale;
 
 A = imresize(A, scale);
+
+[ht wt dt] = size(A);
+A = imresize(A, [ht wt]);
+B = im
 B = imresize(B, scale);
 mask = imresize(mask, scale);
-M3 = repmat(mask, [1 1 3]) == 1;
 
+% M3 = repmat(mask, [1 1 3]) == 1;
 % [wt ht dt] = size(A);
 % Rnd = uint8(255 * rand(wt, ht, dt));
 % A(M3) = Rnd(M3);
@@ -92,9 +97,13 @@ for current_scale = starting_scale:0
                     % patch voting
                     d = sum( (patchA(:) - patchB(:)).^ error_power);
                     
-                    patchM = mask(PAi
+                    patchM = mask(PAi, PAj);
+                    ratio = 1 - (sum(sum(patchM)) / (CSH_w * CSH_w));
+                    ratio = 1 / 10 + 9 / 10 * ratio;
                     
-                    sim = exp( -d / (2 * sig^2) );
+                    progress = current / max_iterations;
+                    
+                    sim = ratio * exp( -d / (2 * sig ^ 2));
 
                     R_sum(PAi, PAj, :) = R_sum(PAi, PAj, :) + sim * patchB;
                     R_num(PAi, PAj) = R_num(PAi, PAj) + sim;
@@ -133,9 +142,9 @@ for current_scale = starting_scale:0
             
             fprintf('        diff = %f\n', diff);
             
-%             if diff < threshold,
-%                 break;
-%             end
+            if diff < threshold / (2^current_scale) && current > min_iterations,
+                break;
+            end
         end
         
     end
@@ -143,6 +152,8 @@ for current_scale = starting_scale:0
     if current_scale < 0,
         A_data = imresize(A_org, 2 * scale);
         [hB wB dB] = size(A_data);
+        
+        A_data = imresize(A_org, [hB wB]);
         A = imresize(A, [hB wB]);
         B = imresize(B_org, [hB wB]);
         
