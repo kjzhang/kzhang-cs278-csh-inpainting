@@ -125,14 +125,9 @@ if isfield(handles, 'region'),
     CSH_i = 3;
     CSH_k = 1;
     
-    
     image = CSH_inpaint(image_F, image_O, mask, CSH_w, CSH_i, CSH_k);
     
 %     image = CSH_level(5, image_F, image_O, mask, CSH_w, CSH_i, CSH_k);
-    
-    % RGB Mask
-%     M3 = (repmat(mask, [1 1 3]) == 1);
-%     image_F(M3) = 255;
 
 %     image = patch_inpaint(image_F, mask);
     
@@ -154,13 +149,6 @@ if level > 0,
     [next_hB next_wB next_dB] = size(next_B);
     next_mask = imresize(mask, [next_hB next_wB]);
     
-    disp('Resizing images');
-%     disp(size(A));
-%     disp(size(next_A));
-%     disp(size(next_B));
-%     disp(size(next_mask));
-    
-    disp('Getting lower level');
     % CSH_fill the next lowest level
     A_temp = CSH_level(level - 1, next_A, next_B, next_mask, CSH_w, CSH_i, CSH_k);
 
@@ -168,35 +156,15 @@ if level > 0,
     A_scale = impyramid(A_temp, 'expand');
     
     disp('processing lower level');
-%     disp(size(A_temp));
-%     disp(size(A_scale));
-
 
     M3 = repmat(mask, [1 1 3]) == 1;
     A(M3) = A_scale(M3);
-
-%     for i = 1:hB,
-%         for j = 1:wB,
-%             if mask(i, j) == 1,
-%                 A(i, j, :) = A_scale(i, j, :);
-%             end
-%         end
-%     end
 end
 
 A_output = CSH_fill(A, B, mask, CSH_w, CSH_i, CSH_k);
 
 
 function A_output = CSH_fill(A, B, mask, CSH_w, CSH_i, CSH_k)
-
-% width = CSH_w;
-% iterations = CSH_i;
-% k = CSH_k;
-
-% disp('Beginning CSH Fill');
-% disp(size(A));
-% disp(size(B));
-% disp(size(mask));
 
 [hB wB dB] = size(B);
 d = CSH_w - 1;
@@ -225,28 +193,13 @@ for i = 1:hB,
     end
 end
 
-% disp('xmin:');
-% disp(xmin);
-% disp('xmax:');
-% disp(xmax);
-% disp('ymin:');
-% disp(ymin);
-% disp('ymax:');
-% disp(ymax);
-% iterative fill with CSH
 
+% iterative fill with CSH
 for nub = 1:25,
     % CSH Patch Match
     
     imshow(A)
     pause(0.001)
-    
-%     disp(class(A));
-%     disp(class(B));
-%     disp(class(mask));
-%     disp(size(A));
-%     disp(size(B));
-%     disp(size(mask));
     
     A_next = A;
     
