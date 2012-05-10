@@ -8,13 +8,6 @@ if level > 0,
     [next_hB next_wB next_dB] = size(next_B);
     next_mask = imresize(mask, [next_hB next_wB]);
     
-    disp('Resizing images');
-    disp(size(A));
-    disp(size(next_A));
-    disp(size(next_B));
-    disp(size(next_mask));
-    
-    disp('Getting lower level');
     % CSH_fill the next lowest level
     A_temp = CSH_level(level - 1, next_A, next_B, next_mask, CSH_w, CSH_i, CSH_k);
 
@@ -22,31 +15,15 @@ if level > 0,
     A_scale = impyramid(A_temp, 'expand');
     
     disp('processing lower level');
-    disp(size(A_temp));
-    disp(size(A_scale));
-    
-    for i = 1:hB,
-        for j = 1:wB,
-            if mask(i, j) == 1,
-                A(i, j, :) = A_scale(i, j, :);
-            end
-        end
-    end
+
+    M3 = repmat(mask, [1 1 3]) == 1;
+    A(M3) = A_scale(M3);
 end
 
 A_output = CSH_fill(A, B, mask, CSH_w, CSH_i, CSH_k);
 
 
 function A_output = CSH_fill(A, B, mask, CSH_w, CSH_i, CSH_k)
-
-% width = CSH_w;
-% iterations = CSH_i;
-% k = CSH_k;
-
-disp('Beginning CSH Fill');
-disp(size(A));
-disp(size(B));
-disp(size(mask));
 
 [hB wB dB] = size(B);
 d = CSH_w - 1;
@@ -75,25 +52,13 @@ for i = 1:hB,
     end
 end
 
-disp('xmin:');
-disp(xmin);
-disp('xmax:');
-disp(xmax);
-disp('ymin:');
-disp(ymin);
-disp('ymax:');
-disp(ymax);
-% iterative fill with CSH
 
-for nub = 1:1,
+% iterative fill with CSH
+for nub = 1:25,
     % CSH Patch Match
     
-    disp(class(A));
-    disp(class(B));
-    disp(class(mask));
-    disp(size(A));
-    disp(size(B));
-    disp(size(mask));
+    imshow(A)
+    pause(0.001)
     
     A_next = A;
     
@@ -146,6 +111,8 @@ for nub = 1:1,
         s = sum(sum(current_mask));
     end
 
+    CSH_ann = CSH_nn(A_next, B, CSH_w, CSH_i, CSH_k, 0, mask);
+    
     for row = ymin:ymax,
         for col = xmin:xmax,
             if current_mask(row, col) == 1,           
